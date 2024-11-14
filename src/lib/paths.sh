@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2034  # TRASH_DIRS is used in main script
+# shellcheck disable=SC2034
 
 detect_system_paths() {
   local jupyter_cmd=""
-
-  # Find Jupyter executable location
   jupyter_cmd=$(command -v jupyter || true)
 
   if [[ -n "$jupyter_cmd" ]]; then
-    # Get data dir from Jupyter itself
     local jupyter_data_dir=""
     jupyter_data_dir=$(jupyter --data-dir 2>/dev/null || echo "")
 
@@ -25,14 +22,13 @@ detect_system_paths() {
   fi
 
   validate_paths
-  return 0 # Always return success, validation is separate
+  return 0
 }
 
 validate_paths() {
   local valid_paths=0
   log_debug "Validating paths..."
 
-  # Check if we have any paths defined
   if [[ ${#RUNTIME_DIRS[@]} -eq 0 ]]; then
     log_error "No runtime directories configured"
     return 1
@@ -49,7 +45,6 @@ validate_paths() {
     fi
   done
 
-  # After validation, check if we have at least one valid path
   if [[ $valid_paths -eq 0 ]]; then
     log_error "No valid Jupyter runtime directories found"
     return 1
@@ -64,11 +59,11 @@ check_permissions() {
   if [[ $current_umask -eq 0000 ]]; then
     log_warn "Current umask is too permissive: $current_umask"
   fi
-  return 0 # Always return success, this is just a warning
+  return 0
 }
 
 check_disk_space() {
-  local min_space=100000 # 100MB in KB
+  local min_space=100000
   local available
   local has_error=0
 
