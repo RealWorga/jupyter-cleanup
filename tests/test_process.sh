@@ -16,7 +16,7 @@ declare -a TEST_PIDS=()
 
 cleanup_test_processes() {
   for pid in "${TEST_PIDS[@]}"; do
-    kill $pid 2>/dev/null || true
+    kill "$pid" 2>/dev/null || true
   done
   TEST_PIDS=()
   ACTIVE_PROCESSES=()
