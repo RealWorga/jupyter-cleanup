@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091  # Don't follow source files
 
-set -euo pipefail
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Declare associative arrays before sourcing
+declare -A RUNTIME_DIRS
+declare -A TRASH_DIRS
+
 source "${SCRIPT_DIR}/../src/lib/logger.sh"
 source "${SCRIPT_DIR}/../src/lib/paths.sh"
 
