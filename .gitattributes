@@ -1,0 +1,9 @@
+# Force .sh to keep LF endings
+*.sh text eol=lf
+
+# Default behavior for all files
+* text=auto
+
+# Documents
+*.md text
+*.yml text

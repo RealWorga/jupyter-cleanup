@@ -1,0 +1,59 @@
+name: ShellCheck
+
+on:
+  push:
+    paths:
+      - "**.sh"
+  pull_request:
+    paths:
+      - "**.sh"
+
+jobs:
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install ShellCheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Run ShellCheck
+        run: |
+          shellcheck src/cleanup.sh
+          shellcheck src/lib/*.sh
+          shellcheck tests/*.sh
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run tests
+        run: |
+          chmod +x tests/*.sh
+          for test in tests/test_*.sh; do
+            echo "Running $test"
+            "$test"
+          done
+
+  integration:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup test environment
+        run: |
+          mkdir -p ~/.local/share/jupyter/runtime
+          touch ~/.local/share/jupyter/runtime/test.json
+
+      - name: Run cleanup script
+        run: |
+          chmod +x src/cleanup.sh
+          ./src/cleanup.sh
+
+      - name: Verify cleanup
+        run: |
+          [[ ! -f ~/.local/share/jupyter/runtime/test.json ]] || exit 1
