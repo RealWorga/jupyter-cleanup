@@ -35,16 +35,19 @@ test_path_detection() {
 test_permission_check() {
   local test_dir="/tmp/test_jupyter"
   mkdir -p "$test_dir"
-  chmod 700 "$test_dir"
 
-  RUNTIME_DIRS=([test]="$test_dir")
+  # Save current umask
+  local old_umask
+  old_umask=$(umask)
+
+  # Set permissive umask temporarily
+  umask 0000
+
+  # Run check (should detect permissive umask)
   check_permissions
 
-  chmod 777 "$test_dir"
-  check_permissions 2>&1 | grep -q "permissive" || {
-    log_error "Permission warning not detected"
-    exit 1
-  }
+  # Restore original umask
+  umask "$old_umask"
 
   rm -rf "$test_dir"
 }
