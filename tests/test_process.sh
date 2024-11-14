@@ -11,13 +11,28 @@ declare -A ACTIVE_PROCESSES
 source "${SCRIPT_DIR}/../src/lib/logger.sh"
 source "${SCRIPT_DIR}/../src/lib/process.sh"
 
-test_process_detection() {
-  # Clear the array
+# Array to track test processes
+declare -a TEST_PIDS=()
+
+cleanup_test_processes() {
+  for pid in "${TEST_PIDS[@]}"; do
+    kill $pid 2>/dev/null || true
+  done
+  TEST_PIDS=()
   ACTIVE_PROCESSES=()
+}
+
+trap cleanup_test_processes EXIT
+
+test_process_detection() {
+  # Clear arrays
+  ACTIVE_PROCESSES=()
+  TEST_PIDS=()
 
   # Start mock Jupyter process
   python3 -c 'import time; time.sleep(60)' &
   local mock_pid=$!
+  TEST_PIDS+=("$mock_pid")
 
   # Rename process to look like Jupyter
   if command -v prctl >/dev/null 2>&1; then
@@ -26,8 +41,6 @@ test_process_detection() {
 
   detect_jupyter_processes
 
-  kill $mock_pid 2>/dev/null || true
-
   [[ ${#ACTIVE_PROCESSES[@]} -ge 0 ]] || {
     log_error "Process detection failed"
     exit 1
@@ -35,13 +48,16 @@ test_process_detection() {
 }
 
 test_process_termination() {
-  # Clear the array
+  # Clear arrays
   ACTIVE_PROCESSES=()
+  TEST_PIDS=()
 
   # Multiple mock processes
   for _ in {1..3}; do
     sleep 60 &
-    ACTIVE_PROCESSES[$!]="mock-jupyter"
+    local pid=$!
+    ACTIVE_PROCESSES[$pid]="mock-jupyter"
+    TEST_PIDS+=("$pid")
   done
 
   terminate_processes
