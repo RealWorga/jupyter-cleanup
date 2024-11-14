@@ -1,6 +1,9 @@
 # Jupyter Cleanup
 
-Robust cleanup utility for Jupyter environments on Linux servers.
+[![ShellCheck](https://github.com/RealWorga/jupyter-cleanup/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/RealWorga/jupyter-cleanup/actions/workflows/shellcheck.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+Cleanup utility for Jupyter environments on Linux servers.
 
 ## Features
 
