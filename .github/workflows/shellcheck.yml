@@ -20,9 +20,10 @@ jobs:
         run: sudo apt-get install -y shellcheck
 
       - name: Run ShellCheck
+        working-directory: ${{ github.workspace }}
         run: |
-          # Check main script
-          cd src && shellcheck -x cleanup.sh
+          # Check main script from its directory
+          (cd src && shellcheck -x cleanup.sh)
           # Check library files
           shellcheck src/lib/*.sh
           # Check test files
@@ -56,7 +57,7 @@ jobs:
       - name: Run cleanup script
         run: |
           chmod +x src/cleanup.sh
-          cd src && ./cleanup.sh
+          (cd src && ./cleanup.sh)
 
       - name: Verify cleanup
         run: |
