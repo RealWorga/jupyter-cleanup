@@ -7,15 +7,12 @@ handle_running_processes() {
 
 detect_jupyter_processes() {
   local pids
-
-  # More specific pattern for Jupyter processes
   mapfile -t pids < <(pgrep -U "$UID" -f "jupyter-notebook|jupyter-lab|jupyter-server" 2>/dev/null || true)
 
   for pid in "${pids[@]}"; do
     if [[ -n "$pid" ]]; then
       local cmdline
       cmdline=$(tr '\0' ' ' <"/proc/${pid}/cmdline" 2>/dev/null || echo "")
-      # Additional verification that it's actually a Jupyter process
       if [[ "$cmdline" =~ jupyter-(notebook|lab|server) ]]; then
         ACTIVE_PROCESSES["pid_${pid}"]=$cmdline
         log_debug "Found Jupyter process $pid: $cmdline"
@@ -37,7 +34,6 @@ terminate_processes() {
       log_info "Terminating Jupyter process $pid: ${ACTIVE_PROCESSES[$key]}"
       kill -TERM "$pid" 2>/dev/null
 
-      # Wait for process to terminate
       local i
       for ((i = 0; i < 5; i++)); do
         if ! kill -0 "$pid" 2>/dev/null; then
@@ -47,7 +43,6 @@ terminate_processes() {
         sleep 1
       done
 
-      # Force kill if still running
       if kill -0 "$pid" 2>/dev/null; then
         log_warn "Force killing process $pid"
         kill -9 "$pid" 2>/dev/null
@@ -67,13 +62,8 @@ clean_runtime_directories() {
   for dir in "${RUNTIME_DIRS[@]}"; do
     if [[ -d "$dir" ]]; then
       log_info "Cleaning directory: $dir"
-
-      # Remove all JSON files (changed from mtime +1)
       find "$dir" -name "*.json" -type f -delete 2>/dev/null
-
-      # Remove empty dirs
       find "$dir" -type d -empty -delete 2>/dev/null
-
       ((removed++))
     fi
   done
@@ -84,7 +74,6 @@ clean_runtime_directories() {
 
 verify_cleanup() {
   local active_count
-  # Use the same specific pattern as detect_jupyter_processes
   active_count=$(pgrep -U "$UID" -f "jupyter-notebook|jupyter-lab|jupyter-server" 2>/dev/null | wc -l)
 
   if [[ $active_count -gt 0 ]]; then
