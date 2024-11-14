@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC1091  # Don't follow source files
+# shellcheck disable=SC1091
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Declare associative arrays before sourcing
 declare -A RUNTIME_DIRS
-# shellcheck disable=SC2034  # TRASH_DIRS is used in sourced files
 declare -A TRASH_DIRS
 
 source "${SCRIPT_DIR}/../src/lib/logger.sh"
@@ -36,17 +34,10 @@ test_permission_check() {
   local test_dir="/tmp/test_jupyter"
   mkdir -p "$test_dir"
 
-  # Save current umask
   local old_umask
   old_umask=$(umask)
-
-  # Set permissive umask temporarily
   umask 0000
-
-  # Run check (should detect permissive umask)
   check_permissions
-
-  # Restore original umask
   umask "$old_umask"
 
   rm -rf "$test_dir"

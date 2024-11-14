@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC1091  # Don't follow source files
+# shellcheck disable=SC1091
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Simpler debug function
 debug_array() {
   local name=$1
   echo "=== Debug $name ==="
@@ -13,14 +12,11 @@ debug_array() {
   echo "=================="
 }
 
-# Declare array at global scope
 declare -A ACTIVE_PROCESSES
+declare -a TEST_PIDS=()
 
 source "${SCRIPT_DIR}/../src/lib/logger.sh"
 source "${SCRIPT_DIR}/../src/lib/process.sh"
-
-# Array to track test processes
-declare -a TEST_PIDS=()
 
 cleanup_test_processes() {
   log_debug "=== Cleanup Start ==="
@@ -68,36 +64,25 @@ test_process_termination() {
   declare -g -A ACTIVE_PROCESSES
   TEST_PIDS=()
 
-  # Test processes one at a time
   for i in {1..3}; do
     log_debug "Starting process $i"
     sleep 60 &
     local pid=$!
     TEST_PIDS+=("$pid")
 
-    # Set array value
     local key="pid_${pid}"
     ACTIVE_PROCESSES[$key]="mock-jupyter"
     log_debug "Added process $pid to array"
     debug_array ACTIVE_PROCESSES
   done
 
-  log_debug "=== Before Termination ==="
-  debug_array ACTIVE_PROCESSES
-
-  # Call terminate and check its return value
   if ! terminate_processes; then
     log_error "terminate_processes failed"
     return 1
   fi
 
-  log_debug "=== After Termination ==="
-  debug_array ACTIVE_PROCESSES
-
-  # Give processes time to fully terminate
   sleep 1
 
-  # Verify termination
   local running=0
   for key in "${!ACTIVE_PROCESSES[@]}"; do
     local pid="${key#pid_}"
