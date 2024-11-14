@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC1091  # Don't follow /etc/os-release
+# shellcheck disable=SC1091
 
 readonly REQUIRED_COMMANDS=(pgrep kill find df free)
 
