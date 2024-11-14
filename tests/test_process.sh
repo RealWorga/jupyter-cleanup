@@ -5,20 +5,16 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Debug function
+# Simpler debug function
 debug_array() {
-  local array_name=$1
-  echo "=== Debug $array_name ==="
-  echo "Type: $(declare -p "$array_name" 2>/dev/null || echo "undefined")"
-  echo "Keys: $(eval "echo \${!$array_name[@]:-none}")"
-  echo "Values: $(eval "echo \${$array_name[@]:-none}")"
-  echo "Size: $(eval "echo \${#$array_name[@]:-0}")"
+  local name=$1
+  echo "=== Debug $name ==="
+  declare -p "$name" 2>/dev/null || echo "Array not defined"
   echo "=================="
 }
 
 # Declare array at global scope
 declare -A ACTIVE_PROCESSES
-debug_array ACTIVE_PROCESSES
 
 source "${SCRIPT_DIR}/../src/lib/logger.sh"
 source "${SCRIPT_DIR}/../src/lib/process.sh"
@@ -29,15 +25,18 @@ declare -a TEST_PIDS=()
 cleanup_test_processes() {
   log_debug "=== Cleanup Start ==="
   debug_array ACTIVE_PROCESSES
-  log_debug "Cleaning up test processes: ${TEST_PIDS[*]:-none}"
+
   for pid in "${TEST_PIDS[@]}"; do
     if kill -0 "$pid" 2>/dev/null; then
       log_debug "Killing test process $pid"
       kill "$pid" 2>/dev/null || true
     fi
   done
+
   TEST_PIDS=()
-  ACTIVE_PROCESSES=()
+  unset ACTIVE_PROCESSES
+  declare -g -A ACTIVE_PROCESSES
+
   log_debug "=== Cleanup End ==="
   debug_array ACTIVE_PROCESSES
 }
@@ -48,8 +47,8 @@ test_process_detection() {
   log_debug "=== Detection Start ==="
   debug_array ACTIVE_PROCESSES
 
-  log_debug "Starting process detection test"
-  ACTIVE_PROCESSES=()
+  unset ACTIVE_PROCESSES
+  declare -g -A ACTIVE_PROCESSES
   TEST_PIDS=()
 
   python3 -c 'import time; time.sleep(60)' &
@@ -58,44 +57,28 @@ test_process_detection() {
   log_debug "Started mock process with PID $mock_pid"
 
   detect_jupyter_processes
-  log_debug "=== After Detection ==="
   debug_array ACTIVE_PROCESSES
-
-  [[ ${#ACTIVE_PROCESSES[@]} -ge 0 ]] || {
-    log_error "Process detection failed. Found ${#ACTIVE_PROCESSES[@]} processes"
-    exit 1
-  }
 }
 
 test_process_termination() {
   log_debug "=== Termination Start ==="
   debug_array ACTIVE_PROCESSES
 
-  log_debug "Starting process termination test"
-  ACTIVE_PROCESSES=()
+  unset ACTIVE_PROCESSES
+  declare -g -A ACTIVE_PROCESSES
   TEST_PIDS=()
 
-  # Start single process first as test
-  log_debug "Starting test process..."
-  sleep 60 &
-  local test_pid=$!
-  log_debug "Got PID: $test_pid"
-  log_debug "Setting array key: pid_${test_pid}"
-
-  # Try setting single process first
-  ACTIVE_PROCESSES["pid_${test_pid}"]="mock-jupyter"
-  log_debug "=== After First Process ==="
-  debug_array ACTIVE_PROCESSES
-
-  # If we got here, try adding more
-  for i in {2..3}; do
-    log_debug "Starting process $i..."
+  # Test processes one at a time
+  for i in {1..3}; do
+    log_debug "Starting process $i"
     sleep 60 &
     local pid=$!
     TEST_PIDS+=("$pid")
-    log_debug "Setting array key: pid_${pid}"
-    ACTIVE_PROCESSES["pid_${pid}"]="mock-jupyter"
-    log_debug "=== After Process $i ==="
+
+    # Set array value
+    local key="pid_${pid}"
+    ACTIVE_PROCESSES[$key]="mock-jupyter"
+    log_debug "Added process $pid to array"
     debug_array ACTIVE_PROCESSES
   done
 
@@ -107,12 +90,10 @@ test_process_termination() {
   log_debug "=== After Termination ==="
   debug_array ACTIVE_PROCESSES
 
-  # Verify all processes were terminated
+  # Verify termination
   local running=0
   for key in "${!ACTIVE_PROCESSES[@]}"; do
-    log_debug "Checking key: $key"
     local pid="${key#pid_}"
-    log_debug "Extracted PID: $pid"
     if kill -0 "$pid" 2>/dev/null; then
       log_debug "Process $pid is still running"
       ((running++))
@@ -127,7 +108,7 @@ test_process_termination() {
 
 main() {
   log_header "Running process tests"
-  export DEBUG=1 # Enable debug logging
+  export DEBUG=1
 
   test_process_detection
   test_process_termination
