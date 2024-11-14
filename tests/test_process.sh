@@ -4,6 +4,10 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Declare associative array before sourcing
+declare -A ACTIVE_PROCESSES
+
 source "${SCRIPT_DIR}/../src/lib/logger.sh"
 source "${SCRIPT_DIR}/../src/lib/process.sh"
 
