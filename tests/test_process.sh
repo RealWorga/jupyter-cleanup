@@ -5,18 +5,15 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Initialize arrays
-init_arrays() {
-  # Reinitialize the associative array
-  unset ACTIVE_PROCESSES
-  declare -g -A ACTIVE_PROCESSES
-}
+# Declare array at global scope
+declare -A ACTIVE_PROCESSES
 
 source "${SCRIPT_DIR}/../src/lib/logger.sh"
 source "${SCRIPT_DIR}/../src/lib/process.sh"
 
 test_process_detection() {
-  init_arrays
+  # Clear the array
+  ACTIVE_PROCESSES=()
 
   # Start mock Jupyter process
   python3 -c 'import time; time.sleep(60)' &
@@ -38,7 +35,8 @@ test_process_detection() {
 }
 
 test_process_termination() {
-  init_arrays
+  # Clear the array
+  ACTIVE_PROCESSES=()
 
   # Multiple mock processes
   for _ in {1..3}; do
