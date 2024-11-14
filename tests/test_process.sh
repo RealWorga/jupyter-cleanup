@@ -7,13 +7,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Debug function
 debug_array() {
-  local name=$1
-  local -n arr=$1
-  echo "=== Debug $name ==="
-  echo "Type: $(declare -p "$name")"
-  echo "Keys: ${!arr[@]:-none}"
-  echo "Values: ${arr[@]:-none}"
-  echo "Size: ${#arr[@]}"
+  local array_name=$1
+  echo "=== Debug $array_name ==="
+  echo "Type: $(declare -p "$array_name" 2>/dev/null || echo "undefined")"
+  echo "Keys: $(eval "echo \${!$array_name[@]:-none}")"
+  echo "Values: $(eval "echo \${$array_name[@]:-none}")"
+  echo "Size: $(eval "echo \${#$array_name[@]:-0}")"
   echo "=================="
 }
 
