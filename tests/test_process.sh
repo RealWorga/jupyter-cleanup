@@ -53,17 +53,13 @@ test_process_termination() {
   ACTIVE_PROCESSES=()
   TEST_PIDS=()
 
-  local pids=()
-  # Start mock processes
-  for _ in {1..3}; do
+  # Start mock processes one by one
+  for i in {1..3}; do
     sleep 60 &
-    pids+=("$!")
-  done
-
-  # Add processes to tracking arrays
-  for pid in "${pids[@]}"; do
+    local pid=$!
     TEST_PIDS+=("$pid")
-    ACTIVE_PROCESSES["pid_${pid}"]="mock-jupyter"
+    # Use printf to ensure proper string handling
+    ACTIVE_PROCESSES["pid_${pid}"]=$(printf "mock-jupyter")
     log_debug "Started mock process with PID $pid"
   done
 
