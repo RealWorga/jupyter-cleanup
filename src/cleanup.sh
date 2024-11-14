@@ -10,29 +10,29 @@ source "${SCRIPT_DIR}/lib/paths.sh"
 source "${SCRIPT_DIR}/lib/process.sh"
 source "${SCRIPT_DIR}/lib/system.sh"
 
-trap cleanup_handler EXIT
-trap error_handler ERR
-trap 'exit 130' INT
-
-# shellcheck disable=SC2034
+# Initialize arrays
 declare -A RUNTIME_DIRS
-# shellcheck disable=SC2034
 declare -A TRASH_DIRS
-# shellcheck disable=SC2034
 declare -A ACTIVE_PROCESSES
 
-main() {
-  init_logging
-  detect_system_paths
-  verify_environment
+# Status tracking
+declare -i EXIT_CODE=0
 
-  log_header "Starting Jupyter cleanup"
+cleanup_handler() {
+  local exit_code=$?
+  exec 1>&3 2>&4
+  if [ $exit_code -ne 0 ]; then
+    log_error "Cleanup failed with code $exit_code"
+    exit_code=1
+  fi
+  exit $exit_code
+}
 
-  handle_running_processes
-  clean_runtime_directories
-  verify_cleanup
-
-  log_header "Cleanup completed successfully"
+error_handler() {
+  local line_no=$1
+  local command=$2
+  log_error "Failed at line ${line_no}: ${command}"
+  EXIT_CODE=1
 }
 
 init_logging() {
@@ -43,22 +43,38 @@ init_logging() {
 }
 
 verify_environment() {
-  check_permissions
-  validate_paths
-  check_disk_space
+  check_permissions || EXIT_CODE=1
+  validate_paths || EXIT_CODE=1
+  check_disk_space || EXIT_CODE=1
 }
 
-cleanup_handler() {
-  local exit_code=$?
-  exec 1>&3 2>&4
-  [ $exit_code -ne 0 ] && log_error "Cleanup failed with code $exit_code"
-  return $exit_code
-}
+main() {
+  trap cleanup_handler EXIT
+  trap error_handler ERR
+  trap 'exit 130' INT
 
-error_handler() {
-  local line_no=$1
-  local command=$2
-  log_error "Failed at line ${line_no}: ${command}"
+  init_logging
+  log_header "Starting Jupyter cleanup"
+
+  # Initialize environment
+  detect_system_paths || EXIT_CODE=1
+  verify_environment
+
+  # Main cleanup tasks
+  if [ $EXIT_CODE -eq 0 ]; then
+    handle_running_processes || EXIT_CODE=1
+    clean_runtime_directories || EXIT_CODE=1
+    verify_cleanup || EXIT_CODE=1
+  else
+    log_error "Environment verification failed, skipping cleanup"
+  fi
+
+  if [ $EXIT_CODE -eq 0 ]; then
+    log_header "Cleanup completed successfully"
+  else
+    log_error "Cleanup completed with errors"
+    return 1
+  fi
 }
 
 main "$@"

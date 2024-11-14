@@ -61,9 +61,14 @@ jobs:
 
       - name: Run cleanup script
         run: |
-          cd src && ./cleanup.sh || {
+          cd src
+          export DEBUG=1
+          ./cleanup.sh || {
             echo "Script failed, checking logs:"
             cat ~/.local/state/jupyter-cleanup/cleanup-*.log
+            echo "Environment info:"
+            env | grep -i jupyter || true
+            ls -la ~/.local/share/jupyter/runtime || true
             exit 1
           }
 
