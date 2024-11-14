@@ -68,8 +68,8 @@ clean_runtime_directories() {
     if [[ -d "$dir" ]]; then
       log_info "Cleaning directory: $dir"
 
-      # Remove JSON files older than a day
-      find "$dir" -name "*.json" -type f -mtime +1 -delete 2>/dev/null
+      # Remove all JSON files (changed from mtime +1)
+      find "$dir" -name "*.json" -type f -delete 2>/dev/null
 
       # Remove empty dirs
       find "$dir" -type d -empty -delete 2>/dev/null

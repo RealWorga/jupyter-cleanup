@@ -77,4 +77,9 @@ jobs:
 
       - name: Verify cleanup
         run: |
-          [[ ! -f ~/.local/share/jupyter/runtime/test.json ]] || exit 1
+          if [[ -f ~/.local/share/jupyter/runtime/test.json ]]; then
+            echo "ERROR: Test file still exists"
+            ls -la ~/.local/share/jupyter/runtime/
+            exit 1
+          fi
+          echo "Cleanup successful"
