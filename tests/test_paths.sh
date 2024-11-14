@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1091  # Don't follow source files
 
 set -euo pipefail
 
