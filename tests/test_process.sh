@@ -39,11 +39,6 @@ test_process_detection() {
   TEST_PIDS+=("$mock_pid")
   log_debug "Started mock process with PID $mock_pid"
 
-  # Rename process to look like Jupyter
-  if command -v prctl >/dev/null 2>&1; then
-    prctl --name "jupyter-mock"
-  fi
-
   detect_jupyter_processes
   log_debug "Detected processes: ${!ACTIVE_PROCESSES[*]:-none}"
 
@@ -62,7 +57,7 @@ test_process_termination() {
   for _ in {1..3}; do
     sleep 60 &
     local pid=$!
-    ACTIVE_PROCESSES[$pid]="mock-jupyter"
+    ACTIVE_PROCESSES["pid_$pid"]="mock-jupyter" # Use string prefix for pid
     TEST_PIDS+=("$pid")
     log_debug "Started mock process with PID $pid"
   done
@@ -73,7 +68,8 @@ test_process_termination() {
 
   # Verify all processes were terminated
   local running=0
-  for pid in "${!ACTIVE_PROCESSES[@]}"; do
+  for key in "${!ACTIVE_PROCESSES[@]}"; do
+    local pid="${key#pid_}" # Remove prefix to get actual pid
     if kill -0 "$pid" 2>/dev/null; then
       log_debug "Process $pid is still running"
       ((running++))
@@ -88,7 +84,6 @@ test_process_termination() {
 
 main() {
   log_header "Running process tests"
-
   export DEBUG=1 # Enable debug logging
 
   test_process_detection
