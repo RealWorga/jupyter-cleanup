@@ -2,18 +2,20 @@
 # shellcheck disable=SC2034  # TRASH_DIRS is used in main script
 
 detect_system_paths() {
-  local jupyter_cmd
-
-  jupyter_cmd=$(command -v jupyter || true)
-
-  if [[ -n "$jupyter_cmd" ]]; then
-    local jupyter_data_dir
-    jupyter_data_dir=$(jupyter --data-dir 2>/dev/null || echo "")
-
-    if [[ -n "$jupyter_data_dir" ]]; then
-      RUNTIME_DIRS["jupyter_data"]="${jupyter_data_dir}/runtime"
+    local jupyter_cmd=""
+    
+    # Find Jupyter executable location
+    jupyter_cmd=$(command -v jupyter || true)
+    
+    if [[ -n "$jupyter_cmd" ]]; then
+        # Get data dir from Jupyter itself
+        local jupyter_data_dir=""
+        jupyter_data_dir=$(jupyter --data-dir 2>/dev/null || echo "")
+        
+        if [[ -n "$jupyter_data_dir" ]]; then
+            RUNTIME_DIRS["jupyter_data"]="${jupyter_data_dir}/runtime"
+        fi
     fi
-  fi
 
   RUNTIME_DIRS["local"]="${HOME}/.local/share/jupyter/runtime"
   RUNTIME_DIRS["xdg"]="${XDG_RUNTIME_DIR:-/run/user/$UID}/jupyter"
