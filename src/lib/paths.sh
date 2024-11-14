@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2034  # TRASH_DIRS is used in main script
 
 detect_system_paths() {
   local jupyter_cmd
