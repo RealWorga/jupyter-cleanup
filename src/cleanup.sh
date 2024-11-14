@@ -10,6 +10,7 @@ source "${SCRIPT_DIR}/lib/process.sh"
 source "${SCRIPT_DIR}/lib/system.sh"
 
 declare -A RUNTIME_DIRS
+# shellcheck disable=SC2034  # TRASH_DIRS is used in sourced files
 declare -A TRASH_DIRS
 declare -A ACTIVE_PROCESSES
 declare -i EXIT_CODE=0
