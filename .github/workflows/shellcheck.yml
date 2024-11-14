@@ -54,10 +54,13 @@ jobs:
           # Make all scripts executable
           chmod +x src/cleanup.sh
           chmod +x src/lib/*.sh
-          # Create test directories
+          # Create test directories and files
           mkdir -p ~/.local/share/jupyter/runtime
           mkdir -p ~/.local/state/jupyter-cleanup
           touch ~/.local/share/jupyter/runtime/test.json
+          # Set appropriate permissions
+          chmod 755 ~/.local/share/jupyter/runtime
+          chmod 644 ~/.local/share/jupyter/runtime/test.json
 
       - name: Run cleanup script
         run: |

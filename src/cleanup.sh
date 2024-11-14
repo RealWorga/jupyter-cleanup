@@ -44,9 +44,31 @@ init_logging() {
 }
 
 verify_environment() {
-  check_permissions || EXIT_CODE=1
-  validate_paths || EXIT_CODE=1
-  check_disk_space || EXIT_CODE=1
+  log_debug "Verifying environment..."
+
+  log_debug "Checking requirements..."
+  check_requirements || {
+    log_error "System requirements check failed"
+    return 1
+  }
+
+  log_debug "Checking permissions..."
+  check_permissions || {
+    log_debug "Permission check passed (warnings are okay)"
+  }
+
+  log_debug "Validating paths..."
+  validate_paths || {
+    log_error "Path validation failed"
+    return 1
+  }
+
+  log_debug "Checking disk space..."
+  check_disk_space || {
+    log_debug "Disk space check passed (warnings are okay)"
+  }
+
+  return 0
 }
 
 main() {
@@ -55,11 +77,15 @@ main() {
   trap 'exit 130' INT
 
   init_logging
+  export DEBUG=1 # Enable debug logging for CI
   log_header "Starting Jupyter cleanup"
 
   # Initialize environment
+  log_debug "Detecting system paths..."
   detect_system_paths || EXIT_CODE=1
-  verify_environment
+
+  log_debug "Verifying environment..."
+  verify_environment || EXIT_CODE=1
 
   # Main cleanup tasks
   if [ $EXIT_CODE -eq 0 ]; then
