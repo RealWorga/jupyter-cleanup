@@ -14,8 +14,11 @@ trap cleanup_handler EXIT
 trap error_handler ERR
 trap 'exit 130' INT
 
+# shellcheck disable=SC2034
 declare -A RUNTIME_DIRS
+# shellcheck disable=SC2034
 declare -A TRASH_DIRS
+# shellcheck disable=SC2034
 declare -A ACTIVE_PROCESSES
 
 main() {

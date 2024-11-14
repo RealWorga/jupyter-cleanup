@@ -21,9 +21,9 @@ jobs:
 
       - name: Run ShellCheck
         run: |
-          # Check main script with following sources
-          shellcheck -x src/cleanup.sh
-          # Check library files individually
+          # Check main script
+          cd src && shellcheck -x cleanup.sh
+          # Check library files
           shellcheck src/lib/*.sh
           # Check test files
           shellcheck tests/*.sh
@@ -56,7 +56,7 @@ jobs:
       - name: Run cleanup script
         run: |
           chmod +x src/cleanup.sh
-          ./src/cleanup.sh
+          cd src && ./cleanup.sh
 
       - name: Verify cleanup
         run: |
