@@ -85,10 +85,17 @@ test_process_termination() {
   log_debug "=== Before Termination ==="
   debug_array ACTIVE_PROCESSES
 
-  terminate_processes
+  # Call terminate and check its return value
+  if ! terminate_processes; then
+    log_error "terminate_processes failed"
+    return 1
+  fi
 
   log_debug "=== After Termination ==="
   debug_array ACTIVE_PROCESSES
+
+  # Give processes time to fully terminate
+  sleep 1
 
   # Verify termination
   local running=0
@@ -100,10 +107,12 @@ test_process_termination() {
     fi
   done
 
-  [[ $running -eq 0 ]] || {
+  if [[ $running -gt 0 ]]; then
     log_error "Process termination failed. $running processes still running"
-    exit 1
-  }
+    return 1
+  fi
+
+  return 0
 }
 
 main() {

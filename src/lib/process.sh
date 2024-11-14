@@ -7,7 +7,6 @@ handle_running_processes() {
 
 detect_jupyter_processes() {
   local pids
-
   mapfile -t pids < <(pgrep -U "$UID" -f "jupyter-" 2>/dev/null || true)
 
   for pid in "${pids[@]}"; do
@@ -25,12 +24,14 @@ terminate_processes() {
 
   for key in "${!ACTIVE_PROCESSES[@]}"; do
     local pid="${key#pid_}"
+    log_debug "Attempting to terminate process $pid"
+
     if kill -0 "$pid" 2>/dev/null; then
       log_info "Terminating Jupyter process $pid: ${ACTIVE_PROCESSES[$key]}"
-
-      # Graceful shutdown first
       kill -TERM "$pid" 2>/dev/null
 
+      # Wait for process to terminate
+      local i
       for ((i = 0; i < 5; i++)); do
         if ! kill -0 "$pid" 2>/dev/null; then
           ((terminated++))
@@ -43,12 +44,14 @@ terminate_processes() {
       if kill -0 "$pid" 2>/dev/null; then
         log_warn "Force killing process $pid"
         kill -9 "$pid" 2>/dev/null
+        sleep 1
         ((terminated++))
       fi
     fi
   done
 
-  log_info "Terminated $terminated Jupyter processes"
+  log_info "Terminated $terminated processes"
+  return 0
 }
 
 clean_runtime_directories() {
