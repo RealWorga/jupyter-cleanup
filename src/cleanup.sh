@@ -12,6 +12,7 @@ source "${SCRIPT_DIR}/lib/system.sh"
 
 # Initialize arrays
 declare -A RUNTIME_DIRS
+# shellcheck disable=SC2034  # Used in sourced files
 declare -A TRASH_DIRS
 declare -A ACTIVE_PROCESSES
 
