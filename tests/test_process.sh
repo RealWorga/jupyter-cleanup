@@ -39,7 +39,9 @@ test_process_termination() {
   # Verify all processes were terminated
   local running=0
   for pid in "${!ACTIVE_PROCESSES[@]}"; do
-    kill -0 "$pid" 2>/dev/null && ((running++)) || true
+    if kill -0 "$pid" 2>/dev/null; then
+      ((running++))
+    fi
   done
 
   [[ $running -eq 0 ]] || {
