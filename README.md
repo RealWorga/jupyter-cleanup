@@ -1,6 +1,6 @@
 # Jupyter Cleanup
 
-[![ShellCheck](https://github.com/RealWorga/jupyter-cleanup/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/RealWorga/jupyter-cleanup/actions/workflows/shellcheck.yml)
+[![ShellCheck](https://github.com/RealWorga/jupyter-cleanup/actions/workflows/shellcheck.yml/badge.svg?branch=main)](https://github.com/RealWorga/jupyter-cleanup/actions/workflows/shellcheck.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Clean up stale Jupyter processes and files on Linux servers. Handles process termination, runtime cleanup, and environment verification.
