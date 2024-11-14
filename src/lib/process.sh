@@ -7,14 +7,21 @@ handle_running_processes() {
 
 detect_jupyter_processes() {
   local pids
-  mapfile -t pids < <(pgrep -U "$UID" -f "jupyter-" 2>/dev/null || true)
+
+  # More specific pattern for Jupyter processes
+  mapfile -t pids < <(pgrep -U "$UID" -f "jupyter-notebook|jupyter-lab|jupyter-server" 2>/dev/null || true)
 
   for pid in "${pids[@]}"; do
     if [[ -n "$pid" ]]; then
       local cmdline
       cmdline=$(tr '\0' ' ' <"/proc/${pid}/cmdline" 2>/dev/null || echo "")
-      ACTIVE_PROCESSES["pid_${pid}"]=$cmdline
-      log_debug "Found Jupyter process $pid: $cmdline"
+      # Additional verification that it's actually a Jupyter process
+      if [[ "$cmdline" =~ jupyter-(notebook|lab|server) ]]; then
+        ACTIVE_PROCESSES["pid_${pid}"]=$cmdline
+        log_debug "Found Jupyter process $pid: $cmdline"
+      else
+        log_debug "Skipping non-Jupyter process $pid: $cmdline"
+      fi
     fi
   done
 }
@@ -72,15 +79,19 @@ clean_runtime_directories() {
   done
 
   log_info "Cleaned $removed directories"
+  return 0
 }
 
 verify_cleanup() {
   local active_count
-  active_count=$(pgrep -U "$UID" -f "jupyter-" 2>/dev/null | wc -l)
+  # Use the same specific pattern as detect_jupyter_processes
+  active_count=$(pgrep -U "$UID" -f "jupyter-notebook|jupyter-lab|jupyter-server" 2>/dev/null | wc -l)
 
   if [[ $active_count -gt 0 ]]; then
     log_warn "$active_count Jupyter processes still running"
+    return 1
   else
     log_info "All Jupyter processes successfully terminated"
+    return 0
   fi
 }
