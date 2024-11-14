@@ -13,7 +13,7 @@ check_requirements() {
     fi
   done
 
-  return $missing # Return count of missing commands instead of exit
+  return "$missing"
 }
 
 get_system_info() {
