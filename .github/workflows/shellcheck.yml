@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "**.sh"
+      - ".github/workflows/shellcheck.yml"
   pull_request:
     paths:
       - "**.sh"
@@ -20,8 +21,11 @@ jobs:
 
       - name: Run ShellCheck
         run: |
-          shellcheck src/cleanup.sh
+          # Check main script with following sources
+          shellcheck -x src/cleanup.sh
+          # Check library files individually
           shellcheck src/lib/*.sh
+          # Check test files
           shellcheck tests/*.sh
 
   test:
