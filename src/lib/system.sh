@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091  # Don't follow /etc/os-release
 
-readonly REQUIRED_COMMANDS=(pgrep kill find df)
+readonly REQUIRED_COMMANDS=(pgrep kill find df free)
 
 check_requirements() {
   local missing=0
@@ -13,7 +13,7 @@ check_requirements() {
     fi
   done
 
-  [[ $missing -gt 0 ]] && exit 1
+  return $missing # Return count of missing commands instead of exit
 }
 
 get_system_info() {
