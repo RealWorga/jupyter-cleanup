@@ -14,7 +14,7 @@ detect_jupyter_processes() {
     if [[ -n "$pid" ]]; then
       local cmdline
       cmdline=$(tr '\0' ' ' <"/proc/${pid}/cmdline" 2>/dev/null || echo "")
-      ACTIVE_PROCESSES[$pid]=$cmdline
+      ACTIVE_PROCESSES["pid_${pid}"]=$cmdline
       log_debug "Found Jupyter process $pid: $cmdline"
     fi
   done
@@ -23,11 +23,12 @@ detect_jupyter_processes() {
 terminate_processes() {
   local terminated=0
 
-  for pid in "${!ACTIVE_PROCESSES[@]}"; do
+  for key in "${!ACTIVE_PROCESSES[@]}"; do
+    local pid="${key#pid_}"
     if kill -0 "$pid" 2>/dev/null; then
-      log_info "Terminating Jupyter process $pid: ${ACTIVE_PROCESSES[$pid]}"
+      log_info "Terminating Jupyter process $pid: ${ACTIVE_PROCESSES[$key]}"
 
-      # Graceful shutdown firsthand
+      # Graceful shutdown first
       kill -TERM "$pid" 2>/dev/null
 
       for ((i = 0; i < 5; i++)); do

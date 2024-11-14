@@ -57,7 +57,7 @@ test_process_termination() {
   for _ in {1..3}; do
     sleep 60 &
     local pid=$!
-    ACTIVE_PROCESSES["pid_$pid"]="mock-jupyter" # Use string prefix for pid
+    ACTIVE_PROCESSES["pid_${pid}"]="mock-jupyter"
     TEST_PIDS+=("$pid")
     log_debug "Started mock process with PID $pid"
   done
@@ -69,7 +69,7 @@ test_process_termination() {
   # Verify all processes were terminated
   local running=0
   for key in "${!ACTIVE_PROCESSES[@]}"; do
-    local pid="${key#pid_}" # Remove prefix to get actual pid
+    local pid="${key#pid_}"
     if kill -0 "$pid" 2>/dev/null; then
       log_debug "Process $pid is still running"
       ((running++))
