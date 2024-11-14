@@ -22,11 +22,8 @@ jobs:
       - name: Run ShellCheck
         working-directory: ${{ github.workspace }}
         run: |
-          # Check main script from its directory
           (cd src && shellcheck -x cleanup.sh)
-          # Check library files
           shellcheck src/lib/*.sh
-          # Check test files
           shellcheck tests/*.sh
 
   test:
@@ -51,14 +48,11 @@ jobs:
 
       - name: Setup environment
         run: |
-          # Make all scripts executable
           chmod +x src/cleanup.sh
           chmod +x src/lib/*.sh
-          # Create test directories and files
           mkdir -p ~/.local/share/jupyter/runtime
           mkdir -p ~/.local/state/jupyter-cleanup
           touch ~/.local/share/jupyter/runtime/test.json
-          # Set appropriate permissions
           chmod 755 ~/.local/share/jupyter/runtime
           chmod 644 ~/.local/share/jupyter/runtime/test.json
 
