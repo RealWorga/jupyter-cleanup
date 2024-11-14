@@ -3,53 +3,40 @@
 [![ShellCheck](https://github.com/RealWorga/jupyter-cleanup/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/RealWorga/jupyter-cleanup/actions/workflows/shellcheck.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Cleanup utility for Jupyter environments on Linux servers.
+Clean up stale Jupyter processes and files on Linux servers. Handles process termination, runtime cleanup, and environment verification.
 
-## Features
-
-- Process management with graceful termination
-- Runtime file cleanup with path detection
-- Cross-distribution compatibility
-- Detailed logging with diagnostics
-- Error recovery and self-healing
-
-## Installation
-
+## Install
 ```bash
 git clone https://github.com/RealWorga/jupyter-cleanup
 cd jupyter-cleanup
-chmod +x src/cleanup.sh
+chmod +x src/cleanup.sh src/lib/*.sh
 ```
 
-## Usage
-
+## Use
 ```bash
 ./src/cleanup.sh
 ```
 
-Logs are stored in `~/.local/state/jupyter-cleanup/`.
+Logs: `~/.local/state/jupyter-cleanup/cleanup-YYYYMMDD.log`
 
-## Server Compatibility
+## Features
+- Safe process termination
+- Runtime file cleanup
+- Path auto-detection
+- Error recovery
+- Cross-distro support
 
-Tested on:
-- Ubuntu Server 18.04+
-- CentOS 7/8
-- RHEL 7/8/9
-- Scientific Linux 7
-- Debian 10+
-
-## Development
-
+## Test
 ```bash
-# Run tests
 ./tests/test_paths.sh
 ./tests/test_process.sh
 ./tests/test_system.sh
-
-# Check code
-shellcheck src/*.sh src/lib/*.sh
 ```
 
-## License
+## Compatibility
+- Ubuntu 18.04+
+- CentOS/RHEL 7+
+- Debian 10+
 
-MIT
+## License
+[MIT](LICENSE)
